@@ -1,0 +1,227 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Django Blog">
+
+  <!-- Google Fonts (Inter for UI, Merriweather for headings) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <!-- Minimal Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-" crossorigin="anonymous">
+
+  <style>
+    :root { --bs-body-bg: #f0f4f8; --bs-body-color: #1a3a52; --brand-0: #3b82f6; --brand-1: #60a5fa; --brand-2: #1e40af; }
+    body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Merriweather', serif; color: #0d2847; font-weight: 700; }
+    .site-title { font-size: 1.5rem; font-weight: 800; color: var(--brand-2); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .site-title:hover { color: var(--brand-0); }
+    .brand-badge { display:inline-flex; align-items:center; gap:0.5rem; background: linear-gradient(90deg,var(--brand-0),var(--brand-1)); color: white; padding: 0.35rem 0.6rem; border-radius: 0.5rem; box-shadow: 0 6px 18px rgba(59,130,246,0.12); }
+    .nav-link { color: #fff !important; font-weight: 600; transition: transform 0.12s, background 0.12s; }
+    .nav-pill { background: transparent; color: white; border-radius: 999px; padding: 0.35rem 0.85rem; margin-left: 0.4rem; border: 1px solid rgba(255,255,255,0.12); }
+    .nav-pill:hover { transform: translateY(-2px); background: rgba(255,255,255,0.06); }
+    .content-section { background: #fff; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(13, 40, 71, 0.08); padding: 2rem; margin-bottom: 1.25rem; border-left: 4px solid #3b82f6; }
+    .article-metadata { color: #64748b; font-size: 0.875rem; margin-bottom: 0.75rem; }
+    .article-content { line-height: 1.8; color: #334155; }
+    .post-excerpt { color: #64748b; }
+    .read-more { color: #2563eb; font-weight: 600; text-decoration: none; }
+    .read-more:hover { text-decoration: underline; color: #1d4ed8; }
+    .site-header { background: linear-gradient(90deg, rgba(59,130,246,0.95) 0%, rgba(96,165,250,0.92) 100%); border-bottom: 0; box-shadow: 0 6px 24px rgba(14,30,60,0.08); }
+    .site-footer { color: #64748b; }
+    .article-card { max-width: 720px; margin: 0 auto; }
+    .posts-list { max-width: 720px; margin: 0 auto; }
+    .btn-primary { background-color: #3b82f6; border-color: #3b82f6; }
+    .btn-primary:hover { background-color: #2563eb; border-color: #2563eb; }
+  </style>
+
+  <title>{% if title %}{{ title }} — {% endif %}Django Blog</title>
+</head>
+<body>
+  <header class="site-header py-3">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <a class="site-title" href="{% url 'Blog-home' %}">
+          <span class="brand-badge">
+            <!-- Simple SVG mark -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="white" opacity="0.12"/>
+              <path d="M7 12c1.5-3 7-3 8.5 0" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Curie
+          </span>
+          <span style="font-size:0.9rem; color:rgba(255,255,255,0.95); margin-left:8px;">Blog</span>
+        </a>
+
+        <nav class="nav align-items-center">
+          <a class="nav-pill nav-link text-white" href="{% url 'Blog-home' %}">Home</a>
+          <a class="nav-pill nav-link text-white" href="{% url 'Blog-about' %}">About</a>
+          {% if user.is_authenticated %}
+            <a class="nav-pill nav-link text-white" href="{% url 'post-new' %}">New Post</a>
+            <a class="nav-pill nav-link text-white" href="{% url 'profile' %}">Profile</a>
+            <form method="post" action="{% url 'logout' %}" class="d-inline ms-2">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-light">Logout</button>
+            </form>
+          {% else %}
+            <a class="nav-pill nav-link text-white" href="{% url 'login' %}">Login</a>
+            <a class="nav-pill nav-link text-white" href="{% url 'register' %}">Register</a>
+          {% endif %}
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="site-main mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% block content %}{% endblock %}
+        </div>
+
+        <aside class="col-lg-4 d-none d-lg-block">
+          <div class="sidebar">
+            <div class="card mb-4">
+              <div class="card-body text-center">
+                <h5 class="mb-1">About</h5>
+                <p class="text-muted small">A clean professional blog that having the latest blog posts with authors corners and make you updated with latest news😉. 
+              </p>
+              </div>
+            </div>
+          
+            </div>
+            <div class="card mb-4">
+              <div class="card-body">
+                 <h6 class="mb-2">Latest Chores</h6>
+                 <br>
+                <ul class="list-unstyled small mb-3">
+                  <li><a class="text-decoration-none text-primary" href="{% url 'Blog-home' %}">Latest Posts</a></li>
+                  <br>
+
+                  <li><p>Haven't you read today's news?<a class="text-decoration-none text-primary" href="https://news.google.com" target="_blank">Here you go😎</a></li></p>
+                </ul>
+          
+              </div>
+            </div>
+
+            <div class="card mb-4">
+              <div class="card-body">
+                <h6 class="mb-3">Author's Corner</h6>
+                <ul class="list-unstyled small">
+                  {% if all_authors %}
+                    {% for author in all_authors %}
+                      <li class="mb-2">
+                        <a class="text-decoration-none text-primary" href="{% url 'user-posts' author.username %}">
+                          {{ author.get_full_name|default:author.username }}
+                        </a>
+                        <small class="d-block text-muted">({{ author.post_set.count }} posts)</small>
+                      </li>
+                    {% endfor %}
+                  {% else %}
+                    <p class="text-muted">No authors yet</p>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+
+            <!-- Visitor Ideas & Comments Section -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <h6 class="mb-3">Share Your Ideas 💡</h6>
+                
+                <!-- Approved Comments Display -->
+                {% if comments %}
+                  <div class="comments-list mb-3">
+                    {% for comment in comments %}
+                      <div class="comment-item mb-3 pb-3 border-bottom" style="font-size: 0.9rem;">
+                        <p class="mb-1"><strong style="color: #1f2937;">{{ comment.visitor_name }}</strong></p>
+                        <p class="mb-1" style="color: #4b5563;">{{ comment.content }}</p>
+                        <small class="text-muted d-block">{{ comment.created_at|date:"M d, Y" }}</small>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-muted mb-3" style="font-size: 0.9rem;">No comments yet. Be the first to share!</p>
+                {% endif %}
+
+                <!-- Comment Form -->
+                <form method="post" action="{% url 'submit-comment' %}" class="comment-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  
+                  <div class="mb-2">
+                    <label for="id_visitor_name" class="form-label" style="font-size: 0.85rem;">Name</label>
+                    {% if form.visitor_name %}
+                      {{ form.visitor_name }}
+                    {% endif %}
+                  </div>
+                  
+                  <div class="mb-2">
+                    <label for="id_visitor_email" class="form-label" style="font-size: 0.85rem;">Email</label>
+                    {% if form.visitor_email %}
+                      {{ form.visitor_email }}
+                    {% endif %}
+                  </div>
+                  
+                  <div class="mb-2">
+                    <label for="id_content" class="form-label" style="font-size: 0.85rem;">Comment</label>
+                    {% if form.content %}
+                      {{ form.content }}
+                    {% endif %}
+                  </div>
+                  
+                  <button type="submit" class="btn btn-sm btn-primary">Post</button>
+                </form>
+              </div>
+            </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer py-5 border-top mt-5">
+    <div class="container text-center small text-muted">
+      © {{ now|date:'Y' }} Likhitha's Blog — Built with care.
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="" crossorigin="anonymous"></script>
+  <script>
+    // Fetch trending news from NewsAPI
+    async function loadTrendingNews() {
+      try {
+        const newsContainer = document.getElementById('trending-news');
+        const response = await fetch('https://newsapi.org/v2/top-headlines?country=us&category=general&apiKey=4d8fb5b0fcb546a0a3b2d6e9f1c8a0b7&pageSize=5');
+        const data = await response.json();
+        
+        if (data.articles && data.articles.length > 0) {
+          let html = '<ul class="list-unstyled mb-0">';
+          data.articles.slice(0, 5).forEach(article => {
+            html += `<li class="mb-2">
+              <a href="${article.url}" target="_blank" class="text-decoration-none text-primary" style="font-size: 0.85rem;">
+                ${article.title}
+              </a>
+              <small class="d-block text-muted">${new Date(article.publishedAt).toLocaleDateString()}</small>
+            </li>`;
+          });
+          html += '</ul>';
+          newsContainer.innerHTML = html;
+        }
+      } catch (error) {
+        document.getElementById('trending-news').innerHTML = '<p class="text-muted text-center mb-0">News unavailable</p>';
+      }
+    }
+    
+    // Load news when page loads
+    document.addEventListener('DOMContentLoaded', loadTrendingNews);
+  </script>
+</body>
+</html>

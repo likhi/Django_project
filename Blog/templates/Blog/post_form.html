@@ -1,0 +1,13 @@
+{% extends "Blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+  <div class="content-section" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST">
+      {% csrf_token %}
+      <h2 class="mb-4">{{ title|default:'New Post' }}</h2>
+      {{ form|crispy }}
+      <button class="btn btn-primary" type="submit">Post</button>
+      <a class="btn btn-outline-secondary" href="{% url 'Blog-home' %}">Cancel</a>
+    </form>
+  </div>
+{% endblock content %}
